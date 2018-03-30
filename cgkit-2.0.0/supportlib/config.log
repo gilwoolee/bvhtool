@@ -1,0 +1,11 @@
+file /home/gilwoo/Oculus_Workspace/bvhtool/cgkit-2.0.0/supportlib/SConstruct,line 62:
+	Configure(confdir = .sconf_temp)
+scons: Configure: Checking for C++ header file boost/shared_ptr.hpp... 
+.sconf_temp/conftest_0.cpp <-
+  |
+  |#include "boost/shared_ptr.hpp"
+  |
+  |
+g++ -o .sconf_temp/conftest_0.o -c -fPIC -Iinclude -I/opt/local/include .sconf_temp/conftest_0.cpp
+scons: Configure: yes
+
