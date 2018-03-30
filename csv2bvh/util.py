@@ -49,7 +49,7 @@ def get_joint_structure(joints, node, structure):
 
     return flattend_root_structure
 
-def read_bvh(bvhfile):
+def read_bvh(bvhfile, root="body_world"):
     print ("Load bvh")
     animation = Animation.from_bvh(bvhfile)
     num_frames = len(animation.frames)
@@ -57,7 +57,24 @@ def read_bvh(bvhfile):
     joints = [node.name for node in pose.bone.node_list]
 
     joints_structure = get_joint_structure(joints, pose.bone.node_list[0], [])
-    return animation, joints, joints_structure
+    joint_structure_names = []
+
+    for structure in joints_structure:
+        names = []
+        for joint in structure:
+            names += [pose.bone.node_list[joint].name]
+        joint_structure_names += [names]
+
+    filtered_joint_structure = []
+    filtered_joint_structure_names = []
+    for structure_names, structure in zip(joint_structure_names, joints_structure):
+        if root not in structure_names:
+            continue
+        root_idx = structure_names.index(root)
+        filtered_joint_structure += [structure[root_idx:]]
+        filtered_joint_structure_names += [structure_names[root_idx:]]
+
+    return animation, joints, filtered_joint_structure, filtered_joint_structure_names
 
 
 def create_header(joint_names):
@@ -67,3 +84,21 @@ def create_header(joint_names):
         names = [j+p for p in postfix]
         header += names
     return header
+
+
+def extract_structure(csvfile, bvhfile, root="b_l_wrist"):
+    data, header = read(csvfile)
+    data = data[[0]]
+    animation, joints, joints_structure, joints_structure_names = read_bvh(bvhfile, root=root)
+    data = data.reshape(data.shape[0], int(data.shape[1]/7), 7)
+
+    print ("Offsets written in  (rotation, translation), with rotation in quaternion format in (x,y,z,w).")
+    offsets = dict()
+    for i in range(0, data.shape[1]):
+        offsets[header[i*7][:-3]] = data[:,i].ravel()
+
+    return joints_structure_names, offsets
+
+if __name__ == "__main__":
+    structure, offsets = extract_structure("../test_taylor_5s.csv", "../skeleton.bvh")
+    import IPython; IPython.embed()

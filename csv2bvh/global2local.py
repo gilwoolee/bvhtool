@@ -42,7 +42,7 @@ def to_quaternions(local_Ts):
 
 def global2local(csvfile, bvhfile):
     data, header = read(csvfile)
-    animation, joints, joints_structure = read_bvh(bvhfile)
+    animation, joints, joints_structure, _ = read_bvh(bvhfile)
     data = data.reshape(data.shape[0], int(data.shape[1]/7), 7)
 
     Ts = []
@@ -54,7 +54,6 @@ def global2local(csvfile, bvhfile):
         Ts += [get_transforms(translations, quaternions)]
         joint_names += [header[i*7][:-3]]
     local_Ts = []
-    print (joint_names)
 
     for joint in joints[1:]:    
         if joint.startswith("End"):

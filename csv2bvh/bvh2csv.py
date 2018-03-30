@@ -18,10 +18,8 @@ def extract_motion(motion):
     timestamp = np.arange(0, frame_rate*num_frames, frame_rate)
     return timestamp, all_data
 
-
-
 def bvh2csv(bvhfile):
-    animation, joints, joints_structure = read_bvh(bvhfile)
+    animation, joints, joints_structure. _ = read_bvh(bvhfile)
 
     all_transforms = []
     all_rotations = []
