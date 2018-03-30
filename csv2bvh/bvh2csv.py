@@ -19,7 +19,7 @@ def extract_motion(motion):
     return timestamp, all_data
 
 def bvh2csv(bvhfile):
-    animation, joints, joints_structure. _ = read_bvh(bvhfile)
+    animation, _, joints, joints_structure. _ = read_bvh(bvhfile)
 
     all_transforms = []
     all_rotations = []

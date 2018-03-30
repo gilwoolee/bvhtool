@@ -49,7 +49,7 @@ def get_joint_structure(joints, node, structure):
 
     return flattend_root_structure
 
-def read_bvh(bvhfile, root="body_world"):
+def read_bvh(bvhfile, fk_pairs=None):
     print ("Load bvh")
     animation = Animation.from_bvh(bvhfile)
     num_frames = len(animation.frames)
@@ -65,16 +65,23 @@ def read_bvh(bvhfile, root="body_world"):
             names += [pose.bone.node_list[joint].name]
         joint_structure_names += [names]
 
+    if fk_pairs is None:
+        return animation, pose.bone.node_list, joints, joints_structure, joint_structure_names    
+        
     filtered_joint_structure = []
     filtered_joint_structure_names = []
     for structure_names, structure in zip(joint_structure_names, joints_structure):
-        if root not in structure_names:
-            continue
-        root_idx = structure_names.index(root)
-        filtered_joint_structure += [structure[root_idx:]]
-        filtered_joint_structure_names += [structure_names[root_idx:]]
+        for (start, end) in fk_pairs:
+            if start not in structure_names:
+                continue
+            if end is not "" and end not in structure_names:
+                continue
+            root_idx = structure_names.index(start)
+            end_idx = structure_names.index(end)+1 if end is not "" else len(structure_names)
+            filtered_joint_structure += [structure[root_idx:end_idx]]
+            filtered_joint_structure_names += [structure_names[root_idx:end_idx]]
 
-    return animation, joints, filtered_joint_structure, filtered_joint_structure_names
+    return animation, pose.bone.node_list, joints, filtered_joint_structure, filtered_joint_structure_names
 
 
 def create_header(joint_names):
@@ -86,19 +93,27 @@ def create_header(joint_names):
     return header
 
 
-def extract_structure(csvfile, bvhfile, root="b_l_wrist"):
-    data, header = read(csvfile)
-    data = data[[0]]
-    animation, joints, joints_structure, joints_structure_names = read_bvh(bvhfile, root=root)
-    data = data.reshape(data.shape[0], int(data.shape[1]/7), 7)
+def extract_structure(bvhfile, fk_pairs=None):
+    import json
+    animation, bones, joints, joints_structure, joint_structure_names = read_bvh(bvhfile, fk_pairs=fk_pairs)
+    offsets = []
+    for bone in bones: 
+        offsets += [bone.offset]
+    skeleton = dict()
+    skeleton["offsets"] = offsets
+    skeleton["joints"] = joints
+    skeleton["joint_structure_names"] = joint_structure_names
 
-    print ("Offsets written in  (rotation, translation), with rotation in quaternion format in (x,y,z,w).")
-    offsets = dict()
-    for i in range(0, data.shape[1]):
-        offsets[header[i*7][:-3]] = data[:,i].ravel()
 
-    return joints_structure_names, offsets
+    import IPython; IPython.embed()
+
+    with open("skeleton.json", 'w') as out:
+        json.dump(skeleton, out)
+
 
 if __name__ == "__main__":
-    structure, offsets = extract_structure("../test_taylor_5s.csv", "../skeleton.bvh")
+    bvhfile = "../skeleton.bvh"
+    extract_structure(bvhfile)
+    # animation, bones, joints, joints_structure, joints_structure_names = read_bvh(bvhfile, fk_pairs=[("b_root", "b_l_wrist"),("b_l_wrist","")])
+    
     import IPython; IPython.embed()

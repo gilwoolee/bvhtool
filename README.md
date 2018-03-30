@@ -18,5 +18,5 @@ To utilize this tool, install the following:
  - ```python csv2bvh/csv2bvh.py -f test_taylor_5s.csv```
 This produces `test_taylor_5s.bvh`, which can be played by the bvhplayer.
 
-
+Use `s` to zoom out, `w` to zoom in, `a` and `d` to rotate.
 
