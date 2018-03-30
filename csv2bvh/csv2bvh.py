@@ -84,4 +84,14 @@ def csv2bvh(csvfile, skeleton_bvh):
 
 if __name__ == "__main__":
 
-    csv2bvh("../test_shugao.csv", "../skeleton.bvh")
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Convert CSV to BVH')
+    parser.add_argument('--file', '-f', type=str,
+                        help='CSV file to parse')
+    parser.add_argument('--skeleton', type=str, default="skeleton.bvh",
+                        help='Skeleton definition')
+
+    args = parser.parse_args()
+
+    csv2bvh(args.file, args.skeleton)
