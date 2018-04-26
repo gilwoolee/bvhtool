@@ -48,9 +48,6 @@ def csv2bvh(csvfile, skeleton_bvh):
 
     for i, joint in enumerate(joint_ordering):
         if joint.startswith("End Site"):
-            # t = np.array(endsite_offsets[joint_ordering[i-1]] + [0,0,0])
-            # t = np.tile(t, (data.shape[0], 1))
-            # new_data += [t]
             pass
         else:
             idx = csv_joints.index(joint)

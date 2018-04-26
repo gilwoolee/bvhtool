@@ -66,8 +66,8 @@ def read_bvh(bvhfile, fk_pairs=None):
         joint_structure_names += [names]
 
     if fk_pairs is None:
-        return animation, pose.bone.node_list, joints, joints_structure, joint_structure_names    
-        
+        return animation, pose.bone.node_list, joints, joints_structure, joint_structure_names
+
     filtered_joint_structure = []
     filtered_joint_structure_names = []
     for structure_names, structure in zip(joint_structure_names, joints_structure):
@@ -83,6 +83,22 @@ def read_bvh(bvhfile, fk_pairs=None):
 
     return animation, pose.bone.node_list, joints, filtered_joint_structure, filtered_joint_structure_names
 
+def read_single_local_pose(bvhfile):
+    animation = Animation.from_bvh(bvhfile)
+    num_frames = len(animation.frames)
+    pose = animation.get_pose(0)
+
+    names = []
+    local_poses = []
+    for i, node in enumerate(pose.bone.node_list):
+        names += [node.name]
+        l = np.array(pose.matrixes_local[i]).transpose()
+        q = transforms3d.quaternions.mat2quat(l[:3,:3])
+        t = l[:3,-1]
+        q = q[[1,2,3,0]]
+        local_poses += [(q.tolist(), t.tolist())]
+
+    return names, local_poses
 
 def create_header(joint_names):
     postfix = ["_rx","_ry","_rz","_rw","_tx","_ty","_tz"]
@@ -92,28 +108,28 @@ def create_header(joint_names):
         header += names
     return header
 
-
 def extract_structure(bvhfile, fk_pairs=None):
     import json
     animation, bones, joints, joints_structure, joint_structure_names = read_bvh(bvhfile, fk_pairs=fk_pairs)
     offsets = []
-    for bone in bones: 
+    for bone in bones:
         offsets += [bone.offset]
+
     skeleton = dict()
     skeleton["offsets"] = offsets
     skeleton["joints"] = joints
     skeleton["joint_structure_names"] = joint_structure_names
 
-
-    import IPython; IPython.embed()
+    _, local_poses = read_single_local_pose(bvhfile)
+    skeleton["local_poses"] = local_poses
 
     with open("skeleton.json", 'w') as out:
-        json.dump(skeleton, out)
+        json.dump(skeleton, out, indent=4)
 
 
 if __name__ == "__main__":
     bvhfile = "../skeleton.bvh"
     extract_structure(bvhfile)
     # animation, bones, joints, joints_structure, joints_structure_names = read_bvh(bvhfile, fk_pairs=[("b_root", "b_l_wrist"),("b_l_wrist","")])
-    
+
     import IPython; IPython.embed()
