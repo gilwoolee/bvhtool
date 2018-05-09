@@ -5,7 +5,6 @@ from BVHToolkit import BVHAnimationReader, Animation, Pose, Bone
 def read(csvfile):
     print ("Load csv")
     print ("Assumes 1st row is the header")
-    print ("Data must contain (rotation, translation), with rotation in quaternion format in (x,y,z,w)")
     data = np.genfromtxt(csvfile, skip_header=1, delimiter=",")
     header = open(csvfile, "r").readline().replace("\n","").replace("\r","").split(",")
     if "time" in header[0].lower():
